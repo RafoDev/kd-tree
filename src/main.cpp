@@ -8,19 +8,19 @@
 #include <vector>
 #include "KDTree.hpp"
 
-#define TEST_BASIC_KD_TREE_ENABLED 0
-#define TEST_MODERATE_KD_TREE_ENABLED 0
-#define TEST_HARDER_KD_TREE_ENABLED 0
-#define TEST_EDGE_CASE_KD_TREE_ENABLED 0
-#define TEST_MUTATING_KD_TREE_ENABLED 0
-#define TEST_THROWING_KD_TREE_ENABLED 0
-#define TEST_CONST_KD_TREE_ENABLED 0
+#define TEST_BASIC_KD_TREE_ENABLED 1
+#define TEST_MODERATE_KD_TREE_ENABLED 1
+#define TEST_HARDER_KD_TREE_ENABLED 1
+#define TEST_EDGE_CASE_KD_TREE_ENABLED 1
+#define TEST_MUTATING_KD_TREE_ENABLED 1
+#define TEST_THROWING_KD_TREE_ENABLED 1
+#define TEST_CONST_KD_TREE_ENABLED 1
 
 #define TEST_NEAREST_NEIGHBOR_ENABLED 0
 #define TEST_MORE_NEAREST_NEIGHBOR_ENABLED 0
 
-#define TEST_BASIC_COPY_ENABLED 0
-#define TEST_MODERATE_COPY_ENABLED 0
+#define TEST_BASIC_COPY_ENABLED 1
+#define TEST_MODERATE_COPY_ENABLED 1
 
 template <size_t N, typename IteratorType>
 Point<N> point_from_range(IteratorType begin, IteratorType end) {
@@ -111,7 +111,7 @@ void test_basic_kd_tree() try {
   CHECK_CONDITION(kd.dimension() == 3, "Dimension is three.");
   CHECK_CONDITION(kd.size() == 0, "New KD tree has no elements.");
   CHECK_CONDITION(kd.empty(), "New KD tree is empty.");
-
+  //entendido xd 
   const double data_points[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
   for (size_t i = 0; i < 3; ++i) {
     kd.insert(point_from_range<3>(data_points[i], data_points[i] + 3), i);
@@ -644,3 +644,21 @@ int main() {
 
   press_enter_to_continue();
 }
+
+// int main()
+// {
+//   const double data_points[8][3] = {
+//       {0, 0, 0}, {0, 1, 0}, {0, 2, 0}, {0, 3, 0},
+//       {0, 4, 0}, {0, 5, 0}, {0, 6, 0}, {0, 7, 0},
+//   };
+
+//   KDTree<3, size_t> kd;
+//   for (size_t i = 0; i < 8; ++i) {
+//     kd.insert(point_from_range<3>(data_points[i], data_points[i] + 3), i);
+//   }
+
+//   KDTree<3,size_t> kd1(kd);
+//   for (size_t i = 0; i < kd1.size(); ++i) {
+//     kd1.contains(point_from_range<3>(data_points[i], data_points[i] + 3));
+//   }
+// }
