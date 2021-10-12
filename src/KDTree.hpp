@@ -49,6 +49,7 @@ private:
   ElemType def;
   size_t dimension_;
   size_t size_;
+
   struct KDTreeNode
   {
     Point<N> pt_;
@@ -73,8 +74,7 @@ private:
     }
     ~KDTreeNode()
     {
-      // delete children[0];
-      // delete children[1];
+
     }
   };
   mutable KDTreeNode *root;
@@ -93,12 +93,10 @@ private:
 
     return (*result) != nullptr;
   }
-  bool search(const Point<N> &pt,KDTreeNode **&result) const
+  bool search(const Point<N> &pt, KDTreeNode **&result) const
   {
     int dimension{0};
-    // KDTreeNode *myRoot = root;
-    // KDTreeNode **result = &myRoot;
-    
+
     result = &root;
     while (*result && (*result)->pt_ != pt)
     {
@@ -122,14 +120,35 @@ private:
   {
     if (node != nullptr)
     {
-      std::cout << node->value_ << " ";
       KDTreeNode *nodeCopy = new KDTreeNode(node->pt_, node->value_, copyNodes(node->children[0]), copyNodes(node->children[1]));
-
       return nodeCopy;
     }
-
   }
+  void knn_util(Point<N> key, KDTreeNode *currentNode, KDTreeNode *&guest, double &bestDistance, int depth) const;
 };
+
+template <size_t N, typename ElemType>
+void KDTree<N, ElemType>::knn_util(Point<N> key, KDTreeNode *currentNode, KDTreeNode *&guest, double &bestDistance, int depth)
+    const
+{
+
+  if (currentNode == nullptr)
+    return;
+  double currentDistance = distance(currentNode->pt_, key);
+
+  if (currentDistance <= bestDistance)
+  {
+    bestDistance = currentDistance;
+    guest = currentNode;
+  }
+  int axis = depth % dimension_;
+  bool child = key[axis] <= currentNode->pt_[axis];
+
+  knn_util(key, currentNode->children[!child], guest, bestDistance, ++depth);
+
+  if (fabs(currentNode->pt_[axis] - key[axis]) <= guest->pt_[axis])
+    knn_util(key, currentNode->children[child], guest, bestDistance, ++depth);
+}
 
 template <size_t N, typename ElemType>
 KDTree<N, ElemType>::KDTree()
@@ -187,8 +206,7 @@ template <size_t N, typename ElemType>
 bool KDTree<N, ElemType>::contains(const Point<N> &pt) const
 {
   KDTreeNode **tmp;
-  bool result = search(pt,tmp);
-  std::cout<<result<<" for "<<pt<<'\n';
+  bool result = search(pt, tmp);
   return result;
 }
 
@@ -203,7 +221,6 @@ void KDTree<N, ElemType>::insert(const Point<N> &pt, const ElemType &value)
   }
   else if (search(pt, tmp))
   {
-    // std::cout << "CAMBIO\n";
     at(pt) = value;
   }
   else
@@ -211,8 +228,6 @@ void KDTree<N, ElemType>::insert(const Point<N> &pt, const ElemType &value)
     ++size_;
     (*tmp) = new KDTreeNode(pt, value);
   }
-  // std::cout << "value inserted: " << value << " at " << pt << '\n';
-
 }
 
 template <size_t N, typename ElemType>
@@ -222,16 +237,17 @@ ElemType &KDTree<N, ElemType>::operator[](const Point<N> &pt)
   if (search(pt, tmp))
     return (*tmp)->value_;
   insert(pt, def);
-  search(pt,tmp);
-  // std::cout<<"construccion\n";
-  return (*tmp)->value_;;
+  search(pt, tmp);
+  return (*tmp)->value_;
+  ;
 }
 
 template <size_t N, typename ElemType>
 ElemType &KDTree<N, ElemType>::at(const Point<N> &pt)
 {
   KDTreeNode **tmp;
-   if(!search(pt, tmp)){
+  if (!search(pt, tmp))
+  {
     throw std::out_of_range("");
   }
   return ((*tmp)->value_);
@@ -241,7 +257,8 @@ template <size_t N, typename ElemType>
 const ElemType &KDTree<N, ElemType>::at(const Point<N> &pt) const
 {
   KDTreeNode **tmp;
-  if(!search(pt, tmp)){
+  if (!search(pt, tmp))
+  {
     throw std::out_of_range("");
   }
   return ((*tmp)->value_);
@@ -250,16 +267,25 @@ const ElemType &KDTree<N, ElemType>::at(const Point<N> &pt) const
 template <size_t N, typename ElemType>
 ElemType KDTree<N, ElemType>::knn_value(const Point<N> &key, size_t k) const
 {
-  ElemType new_element;
-  return new_element;
+  KDTreeNode *currentNode = root;
+  KDTreeNode *guest = nullptr;
+  double bestDistance = std::numeric_limits<double>::infinity();
+  size_t depth{0};
+
+  knn_util(key, currentNode, guest, bestDistance, depth);
+  return guest->value_;
 }
 
 template <size_t N, typename ElemType>
-std::vector<ElemType> KDTree<N, ElemType>::knn_query(const Point<N> &key,
-                                                     size_t k) const
+std::vector<ElemType> KDTree<N, ElemType>::knn_query(const Point<N> &key, size_t k) const
 {
-  std::vector<ElemType> values;
-  return values;
+  KDTreeNode *currentNode = root;
+  KDTreeNode *guest = nullptr;
+  double bestDistance = std::numeric_limits<double>::infinity();
+  size_t depth{0};
+
+  knn_util(key, currentNode, guest, bestDistance, depth);
+  return guest->value_;
 }
 
 #endif // SRC_KDTREE_HPP_
